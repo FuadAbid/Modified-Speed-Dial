@@ -11,7 +11,6 @@ from kivy.properties import (
     BooleanProperty, BoundedNumericProperty, StringProperty
 )
 from kivy.uix.widget import Widget
-from kivy.weakproxy import WeakProxy
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.behaviors import DeclarativeBehavior
 from kivymd.uix.button.button import MDFloatingBottomButton, MDFloatingLabel
@@ -168,7 +167,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
                 if "on_release" in parameters:
                     callback = parameters[parameters.index("on_release") + 1]
                     bottom_button.bind(on_release=callback)
-                self._buttons.append(WeakProxy(bottom_button))
+                self._buttons.append(bottom_button)
                 # Labels.
                 label = None
                 floating_text = name
@@ -181,7 +180,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
                         if self.label_text_color
                         else self.theme_cls.text_color
                     )
-                self._labels.append(WeakProxy(label))
+                self._labels.append(label)
                 self._local_positions.append(0)
                 self.set_pos_bottom_buttons(bottom_button)
                 if isinstance(label, MDFloatingLabel):
