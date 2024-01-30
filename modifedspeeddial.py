@@ -316,6 +316,9 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
         """Closes the button stack."""
 
         for widget in (self._buttons + self._labels):
+            anim_root = Animation(opacity=0, d=self.closing_time+0.1)
+            anim_root.start(self)
+            anim_root.bind(on_complete=self.remove_widgets)
             if isinstance(widget, MDFloatingBottomButton):
                 Animation(
                     center_y=self.parent.center_y,
