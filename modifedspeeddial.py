@@ -276,7 +276,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
         self._window.unbind(on_touch_move=self.touch_move)
         self._window.unbind(on_touch_up=self.touch_up)
         
-    def open_stack(self, instance_root_button: StackRootButton) -> None:
+    def open_stack(self, instance_root_button) -> None:
         for label in self._labels:
             if isinstance(label, MDFloatingLabel):
                 Animation.cancel_all(label)
