@@ -25,9 +25,10 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
 - background width (hint_animation) which depends on longest text makes small hint texts look bad which is fixed now
 
  Additional options:
-- change order of buttons using ``stack_button_direction``
-- change order of labels using ``label_direction``
+- change side of buttons using ``stack_button_direction``
+- change side of labels using ``label_direction``
 - change distance between button and hint text using ``button_text_offset``
+- the widgets will be closed if user clicks outside of the widgets (can be disabled by auto_dismiss=False)
     """
 
     # Labels
