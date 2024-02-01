@@ -362,17 +362,17 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
         anim_root_end.start(self._window)
         anim_root_end.bind(on_complete=self.close_binding)
         
-        for widget in (self._buttons + self._labels):
-            if isinstance(widget, MDFloatingBottomButton):
+        for button, label in zip(self._buttons, self._labels):
+            if isinstance(button, MDFloatingBottomButton):
                 Animation(
                     center_y=self.parent.center_y,
                     d=self.closing_time,
                     t=self.closing_transition,
                     opacity=0,
-                ).start(widget)
-            elif isinstance(widget, MDFloatingLabel):
-                if widget.opacity > 0:
-                    Animation(opacity=0, d=0.1).start(widget)
+                ).start(button)
+            if isinstance(label, MDFloatingLabel):
+                if label.opacity > 0:
+                    Animation(opacity=0, d=0.01).start(label)
 
         self.disabled = True
         self.state = "close"
