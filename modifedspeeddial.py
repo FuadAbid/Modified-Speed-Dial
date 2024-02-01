@@ -56,6 +56,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
 
     # Info
     data = DictProperty()
+    auto_dismiss = BooleanProperty(True)
     state = OptionProperty("close", options=("close", "open"))
 
     # Class Variables
@@ -64,6 +65,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
     _direction_vals = {'right': 1, 'top': 1,
                        'left': -1, 'bottom': -1}
     _window = None
+    _touch_started_inside = None
     _root_button = type('null', (), {'x': 0, 'y': 0, 'pos': (0, 0), 
                                      'center_x': 0, 'center_y': 0, 
                                      'center': (0, 0), 'right': 0, 
@@ -237,6 +239,41 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
                 self._local_positions[
                     self._buttons.index(instance_floating_bottom_button)
                 ])
+
+    def touch_down(self, instance_window, touch):
+        """ touch down event handler. """
+        self._touch_started_inside = any([widget.collide_point(*touch.pos) 
+                                          for widget in (self._buttons+self._labels)])
+        if not self.auto_dismiss or self._touch_started_inside:
+            self._window.on_touch_down(touch)
+        return True
+    
+    def touch_move(self, instance_window, touch):
+        """ touch moved event handler. """
+        if not self.auto_dismiss or self._touch_started_inside:
+            self._window.on_touch_move(touch)
+        return True
+    
+    def touch_up(self, instance_window, touch):
+        """ touch up event handler. """
+        # Explicitly test for False as None occurs when shown by on_touch_down
+        if self.auto_dismiss and self._touch_started_inside is False:
+            self.close_stack()
+        else:
+            self._window.on_touch_up(touch)
+        self._touch_started_inside = None
+        return True
+        
+    def open_binding(self, *args):
+        self._window.bind(on_touch_down=self.touch_down)
+        self._window.bind(on_touch_move=self.touch_move)
+        self._window.bind(on_touch_up=self.touch_up)
+
+    def close_binding(self, *args):
+        self.remove_widgets()
+        self._window.unbind(on_touch_down=self.touch_down)
+        self._window.unbind(on_touch_move=self.touch_move)
+        self._window.unbind(on_touch_up=self.touch_up)
         
     def open_stack(self, instance_root_button: StackRootButton) -> None:
         for label in self._labels:
@@ -308,16 +345,22 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
             except StopIteration:
                 pass
 
+        anim_root_start = Animation(size=self._window.size, 
+                              d=self.opening_time)
+        anim_root_start.bind(on_complete=self.open_binding)
+        anim_root_start.start(self._window)
         widgets_list = iter(list(anim_data.keys()))
         animation_open_stack()
 
     def close_stack(self):
         """Closes the button stack."""
 
+        anim_root_end = Animation(size=self._window.size, 
+                                      d=self.closing_time+0.1)
+        anim_root_end.start(self._window)
+        anim_root_end.bind(on_complete=self.close_binding)
+        
         for widget in (self._buttons + self._labels):
-            anim_root = Animation(opacity=0, d=self.closing_time+0.1)
-            anim_root.start(self)
-            anim_root.bind(on_complete=self.remove_widgets)
             if isinstance(widget, MDFloatingBottomButton):
                 Animation(
                     center_y=self.parent.center_y,
@@ -331,7 +374,6 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
 
         self.disabled = True
         self.state = "close"
-        self.remove_widgets()
         self.dispatch("on_close")
 
     def add_widget(self, widget, *args, **kwargs):
