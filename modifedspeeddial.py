@@ -286,13 +286,13 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
             anim_buttons_data = {}
             anim_labels_data = {}
             self._window = self.get_root_window()
-            self.add_widgets()
 
             for i, button in enumerate(self._buttons):
                 if isinstance(button, MDFloatingBottomButton):
                     # Sets new button positions.
                     y += dp(56) * self._direction_vals[self.stack_button_direction]
-                    self._local_positions[i] = y
+                    if not self._local_positions:
+                        self._local_positions[i] = y
                     button.center_y += y
                     if not self._anim_buttons_data:
                         anim_buttons_data[button] = Animation(
@@ -348,6 +348,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
 
         anim_root_start = Animation(size=self._window.size, 
                               d=self.opening_time)
+        anim_root_start.bind(on_start=lambda x, y: self.add_widgets())
         anim_root_start.bind(on_complete=self.open_binding)
         anim_root_start.start(self._window)
         widgets_list = iter(list(anim_data.keys()))
@@ -378,7 +379,7 @@ class ModifiedSpeedDial(DeclarativeBehavior, ThemableBehavior, Widget):
         self.dispatch("on_close")
 
     def add_widget(self, widget, *args, **kwargs):
-        if self._window is not None:
+        if self._window is not None and widget.parent is None:
             self._window.add_widget(widget)
 
     def add_widgets(self):
